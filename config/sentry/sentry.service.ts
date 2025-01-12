@@ -1,8 +1,12 @@
 import * as Sentry from "@sentry/node";
+import axios from "axios";
 import { container, singleton } from "tsyringe";
 
 @singleton()
 export class SentryService {
+  private sentryApiUrl = "https://sentry.io/api/0";
+  private sentryAuthToken = process.env.SENTRY_API_TOKEN;
+
   constructor() {
     Sentry.init({
       dsn: process.env.SENTRY_DSN,
@@ -54,10 +58,44 @@ export class SentryService {
       },
     });
 
-    await Sentry.flush(2000); // Flush queued events before returning
+    await Sentry.flush(2000);
     return eventId;
+  }
+
+  async getErrors(runId: string): Promise<
+    {
+      scenarioName: string;
+      timestamp: string;
+      details: string;
+    }[]
+  > {
+    if (!this.sentryAuthToken) {
+      throw new Error("Sentry API token is not configured.");
+    }
+
+    try {
+      const response = await axios.get(
+        `${this.sentryApiUrl}/projects/${process.env.SENTRY_ORG}/${process.env.SENTRY_PROJECT}/issues/`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.sentryAuthToken}`,
+          },
+          params: {
+            query: `runId:${runId}`,
+          },
+        }
+      );
+
+      return response.data.map((issue: any) => ({
+        scenarioName: issue.title,
+        timestamp: issue.lastSeen,
+        details: issue.culprit || "No details available",
+      }));
+    } catch (error) {
+      console.error("Failed to fetch errors from Sentry:", error);
+      throw error;
+    }
   }
 }
 
-// Register the service
 container.registerSingleton(SentryService);

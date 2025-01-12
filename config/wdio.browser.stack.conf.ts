@@ -10,6 +10,7 @@ import {
   createNewUser,
   loginCredentials,
 } from "../src/utils/api/api.service.utils.ts";
+import { ErrorReportGenerator } from "../src/utils/helpers/generate.error.report.ts";
 
 import { config as cucumberConfig } from "./wdio.cucumber.conf.ts";
 
@@ -71,7 +72,6 @@ export const config: WebdriverIO.Config = {
         networkLogs: true,
       },
     },
-    
   ] as WebdriverIO.Capabilities[],
 
   onPrepare: async function () {
@@ -113,6 +113,7 @@ export const config: WebdriverIO.Config = {
   beforeSession: function () {
     require("events").EventEmitter.defaultMaxListeners = 1000;
     require("reflect-metadata");
+    container.resolve(SentryService);
   },
 
   before: async function () {
@@ -221,7 +222,11 @@ export const config: WebdriverIO.Config = {
 
           await sentryService.captureTestError(errorToSend, {
             scenarioName: world.pickle.name,
-            browserLogs: await browser.getLogs("browser"),
+            stepText: world.pickle.steps.map((step) => step.text).join("\n"),
+            deviceInfo: await browser.capabilities,
+            platformInfo: {
+              platformName: (await browser.capabilities).platformName,
+            },
           });
         } catch (err) {
           console.error("Failed to send error to Sentry:", err);
@@ -235,9 +240,32 @@ export const config: WebdriverIO.Config = {
     await browser.reloadSession();
   },
 
+  afterTest: async function (test, { passed, error }) {
+    if (!passed) {
+      const sentryService = container.resolve(SentryService);
+      const browserLogs = await browser.getLogs("browser");
+      const deviceInfo = await browser.capabilities;
+
+      await sentryService.captureTestError(error || "Test failed", {
+        scenarioName: test.title,
+        browserLogs,
+        deviceInfo,
+        platformInfo: {
+          platformName: deviceInfo.platformName,
+          browserName: deviceInfo.browserName,
+          browserVersion: deviceInfo.browserVersion,
+        },
+        screenshotPath: await browser.takeScreenshot(),
+      });
+    }
+  },
+
   onComplete: async () => {
     try {
       const childProcess = await import("node:child_process");
+
+      const runId = Date.now().toString();
+      await ErrorReportGenerator.generateReport(runId);
 
       // Generate Allure report
       childProcess.exec(
