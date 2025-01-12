@@ -12,9 +12,9 @@ Feature: Login Test Suite
     When the user enters invalid credentials
     Then the user should see an error message
 
-  @login @negative
+  @login @negative @createProfile
   Scenario: User should login with valid credentials after a failed attempt
-    Given on app launch:: Login SCN003
+    Given on app launch: Login SCN003
     When the user enters their valid credentials afer a failed login attempt
     Then the user should be logged in
 
@@ -26,6 +26,6 @@ Feature: Login Test Suite
 
   @login @negative
   Scenario: Login attempt with non-existing account credentials
-    Given on app launch:: Login SCN005
+    Given on app launch: Login SCN005
     When the user enters non existent credentials
     Then the user should see the error message

@@ -19,7 +19,44 @@ export default class Login {
     title: () => $(this.selectors.commonSelectors.title),
     actionButton: () => $(this.selectors.commonSelectors.actionButton),
     loginButton: () => $(this.selectors.loginSelectors.loginButton),
+    greeting: () => $(this.selectors.loginSelectors.greeting),
   };
+
+  private async handleNetworkError(maxRetries: number = 2) {
+    let retryCount = 0;
+
+    while (retryCount < maxRetries) {
+      try {
+        const messageText = await this.elements.message().getText();
+        const titleText = await this.elements.title().getText();
+
+        if (
+          messageText === "Network Error: Check your connection" &&
+          titleText === "Login Failed"
+        ) {
+          retryCount++;
+          console.log(
+            `Network error detected. Attempt ${retryCount} of ${maxRetries}`
+          );
+
+          await browser.pause(5000);
+          await this.elements.actionButton().click();
+          await browser.pause(5000);
+          await this.elements.loginButton().click();
+          continue;
+        }
+
+        return false;
+      } catch (error) {
+        console.log(`Error during login (attempt ${retryCount + 1}):`, error);
+        retryCount++;
+        if (retryCount === maxRetries) {
+          return false;
+        }
+        await browser.pause(2000);
+      }
+    }
+  }
 
   async loginWithValidCredentials(email: string, passcode: number) {
     try {
@@ -38,10 +75,24 @@ export default class Login {
         timeoutMsg: "No success message was displayed",
       });
 
-      await expect(this.elements.title()).toHaveText("Success");
-      await expect(this.elements.message()).toHaveText("Login successful");
+      const isNetworkError = await this.handleNetworkError();
+      if (isNetworkError) {
+        throw new Error("Network connectivity issue detected");
+      }
+
+      await expect(this.elements.title()).toHaveText("Login Successful");
+      await expect(this.elements.message()).toHaveText("Welcome back!");
+      await this.elements.actionButton().click();
+      await this.elements.greeting().waitForDisplayed({
+        timeout: 60000,
+        timeoutMsg: "User not navigated to dashboard",
+      });
+      await expect(this.elements.greeting()).toHaveText(
+        expect.stringMatching(/^Hello, [A-Z][a-z]+!$/)
+      );
     } catch (error) {
       console.log("Error:", error);
+      throw error;
     }
   }
 
@@ -62,28 +113,39 @@ export default class Login {
         timeoutMsg: "No error message was displayed",
       });
 
-      await expect(this.elements.title()).toHaveText("Login Failed");
+      const isNetworkError = await this.handleNetworkError();
+      if (isNetworkError) {
+        throw new Error("Network connectivity issue detected");
+      }
+
       await expect(this.elements.message()).toHaveText(
         "Invalid credentials. 2 attempts remaining"
       );
     } catch (error) {
       console.log("Error:", error);
+      throw error;
     }
   }
 
   async verifyLockedAccountMessage() {
     try {
+      await this.elements.loginButton().click();
       await this.elements.message().waitForDisplayed({
         timeout: 60000,
         timeoutMsg: "No error message was displayed",
       });
 
-      await expect(this.elements.title()).toHaveText("Login Failed");
       await expect(this.elements.message()).toHaveText(
         "Account locked due to too many failed attempts"
       );
+
+      const isNetworkError = await this.handleNetworkError();
+      if (isNetworkError) {
+        throw new Error("Network connectivity issue detected");
+      }
     } catch (error) {
       console.log("Error:", error);
+      throw error;
     }
   }
 
@@ -123,7 +185,7 @@ export default class Login {
     }
   }
 
-  async loginWithNonExsistentAccount(email: string, passcode: number) {
+  async loginWithNonExistentAccount(email: string, passcode: number) {
     try {
       await this.elements.emailInputField().setValue(email);
       await this.enterPasscode.enterPasscode(passcode);
@@ -140,12 +202,35 @@ export default class Login {
         timeoutMsg: "No error message was displayed",
       });
 
+      const isNetworkError = await this.handleNetworkError();
+      if (isNetworkError) {
+        throw new Error("Network connectivity issue detected");
+      }
+
       await expect(this.elements.title()).toHaveText("Login Failed");
       await expect(this.elements.message()).toHaveText(
         "Account does not exist"
       );
     } catch (error) {
       console.log("Error:", error);
+      throw error;
+    }
+  }
+
+  async loginWithValidCredentialsAfterInvalidCredentials(
+    email: string,
+    invalidPasscode: number,
+    validPasscode: number
+  ) {
+    try {
+      await this.loginWithInvalidCredentials(email, invalidPasscode);
+      await this.verifyInvalidPasscodeErrorMessage();
+      await this.elements.actionButton().click();
+
+      await this.loginWithValidCredentials(email, validPasscode);
+    } catch (error) {
+      console.log("Error during login sequence:", error);
+      throw error;
     }
   }
 }

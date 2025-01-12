@@ -20,6 +20,13 @@ interface UserData {
   profilePicture: string;
 }
 
+interface APIResponse {
+  message: string;
+  profileId: string;
+}
+
+export let loginCredentials: { email: string; passcode: number } | null = null;
+
 function convertToBase64(filePath: string): string {
   const absolutePath = path.resolve(filePath);
   const imageBuffer = fs.readFileSync(absolutePath);
@@ -28,27 +35,35 @@ function convertToBase64(filePath: string): string {
   return `data:image/${fileExtension};base64,${base64Image}`;
 }
 
-async function createUser(userData: UserData) {
+export async function createUser(
+  userData: UserData
+): Promise<APIResponse | null> {
   try {
     const response = await axios.post(`${BASE_URL}/create-profile`, userData);
     console.log("User created successfully:", response.data);
+
+    loginCredentials = {
+      email: userData.email,
+      passcode: userData.passcode,
+    };
+
+    return response.data;
   } catch (error) {
     console.error("Error creating user:", error);
+    return null;
   }
 }
 
 const { userData } = generateOnboardingData();
 
-const createNewUser: UserData = {
+export const createNewUser: UserData = {
   firstName: userData.firstname,
   lastName: userData.lastname,
   email: userData.email,
-  dob: "1900-01-01",
-  location: "Bremen",
+  dob: userData.dob,
+  location: userData.location,
   interests: ["music", "sports", "travel"],
-  sex: "male",
+  sex: userData.sex,
   passcode: parseInt(userData.pin),
   profilePicture: convertToBase64("src/test-data/assets/proautopic.jpg"),
 };
-
-createUser(createNewUser);

@@ -27,7 +27,8 @@
 
   "loginSelectors": {
     "loginButton": "~Login Button",
-    "loginText": "~Login"
+    "loginText": "~Login",
+    "greeting": "~Greeting"
   },
 
   "genderSelectors": {

@@ -1,14 +1,11 @@
-import { autoInjectable } from "tsyringe";
-import LaunchApp from "./welcome.screen";
-import Login from "./auth/login";
+import { injectable, inject } from "tsyringe";
+import LaunchApp from "./welcome.screen.ts";
+import Login from "./auth/login.ts";
 
-@autoInjectable()
+@injectable()
 export default class App {
-  welcomeScreen: LaunchApp;
-  login: Login;
-
-  constructor(welcomeScreen: LaunchApp, login: Login) {
-    this.welcomeScreen = welcomeScreen;
-    this.login = login;
-  }
+  constructor(
+    @inject(LaunchApp) public welcomeScreen: LaunchApp,
+    @inject(Login) public login: Login
+  ) {}
 }

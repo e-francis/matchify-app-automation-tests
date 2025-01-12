@@ -1,4 +1,4 @@
-import { selectors } from "../../config/environment";
+import { selectors } from "../../config/environment.ts";
 import { autoInjectable } from "tsyringe";
 
 @autoInjectable()
@@ -18,10 +18,6 @@ export default class LaunchApp {
       $(this.selectors.commonSelectors.passcodeInputField),
   };
 
-  constructor() {
-    console.log("LaunchedApp instance created");
-  }
-
   async onAppLaunchLogin() {
     try {
       console.log("Starting app launch sequence...");
@@ -31,7 +27,7 @@ export default class LaunchApp {
         timeoutMsg: "App not launched",
       });
 
-      await expect(this.elements.welcomeText).toHaveText("Matchify");
+      await expect(this.elements.welcomeText()).toHaveText("Matchify");
 
       await this.elements.loginButton().waitForDisplayed({
         timeout: 30000,
@@ -78,7 +74,7 @@ export default class LaunchApp {
         timeoutMsg: "App not launched",
       });
 
-      await expect(this.elements.welcomeText).toHaveText("Matchify");
+      await expect(this.elements.welcomeText()).toHaveText("Matchify");
 
       await this.elements.createNewAccountButton().waitForDisplayed({
         timeout: 30000,
