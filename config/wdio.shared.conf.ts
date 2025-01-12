@@ -1,10 +1,12 @@
 import "reflect-metadata";
+import "dotenv/config";
 import { container } from "tsyringe";
 import App from "../src/screens/app.ts";
 import Login from "../src/screens/auth/login.ts";
 import { config as cucumberConfig } from "./wdio.cucumber.conf.ts";
 import * as os from "os";
 import { Options } from "@wdio/types";
+import { SentryService } from "./sentry/sentry.service.ts";
 import {
   createUser,
   createNewUser,
@@ -37,9 +39,6 @@ export const config: Options.Testrunner = {
   // WebdriverIO supports Sauce Labs, Browserstack, Testing Bot and LambdaTest (other cloud providers
   // should work too though). These services define specific user and key (or access key)
   // values you need to put in here in order to connect to these services.
-  //
-  user: process.env.emmanuelfrancis_vGqiRd,
-  key: process.env.fQRzuseATNpNCzxNhk4L,
   //
   // If you run your tests on Sauce Labs you can specify the region you want to run your tests
   // in via the `region` property. Available short handles for regions are `us` (default) and `eu`.
@@ -81,6 +80,7 @@ export const config: Options.Testrunner = {
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
   logLevel: "error",
+
   //
   // Set specific log levels per logger
   // loggers:
@@ -111,10 +111,10 @@ export const config: Options.Testrunner = {
   //
   // Default timeout in milliseconds for request
   // if browser driver or grid doesn't send response
-  connectionRetryTimeout: 120000,
+  connectionRetryTimeout: 300000,
   //
   // Default request retries count
-  connectionRetryCount: 3,
+  connectionRetryCount: 5,
   //
   // Test runner services
   // Services take over a specific job you don't want to take care of. They enhance
@@ -131,7 +131,6 @@ export const config: Options.Testrunner = {
         },
       },
     ],
-    "browserstack",
   ],
 
   //
@@ -322,6 +321,7 @@ export const config: Options.Testrunner = {
    */
   afterStep: async function (step, scenario, { error, passed }) {
     if (error || !passed) {
+      const sentryService = container.resolve(SentryService);
       const date = new Date();
       const timestamp = date.toISOString().replace(/[^0-9]/g, "");
 
@@ -336,7 +336,6 @@ export const config: Options.Testrunner = {
 
         const scenarioName = scenario.name.replace(/[^a-zA-Z0-9]/g, "_");
         const stepText = step.text.replace(/[^a-zA-Z0-9]/g, "_");
-
         const filepath = path.join(
           screenshotDir,
           `${scenarioName}-${stepText}-${timestamp}.png`
@@ -344,13 +343,22 @@ export const config: Options.Testrunner = {
 
         await browser.saveScreenshot(filepath);
 
-        console.log(`
-                Failure in Scenario: ${scenario.name}
-                Step: ${step.text}
-                Screenshot saved: ${filepath}
-            `);
+        if (error) {
+          await sentryService.captureTestError(error, {
+            scenarioName: scenario.name,
+            stepText: step.text,
+            screenshotPath: filepath,
+            browserLogs: await browser.getLogs("browser"),
+          });
+        }
       } catch (err) {
         console.error("Failed to capture screenshot:", err);
+        if (error) {
+          await sentryService.captureTestError(error, {
+            scenarioName: scenario.name,
+            stepText: step.text,
+          });
+        }
       }
     }
   },
@@ -365,31 +373,50 @@ export const config: Options.Testrunner = {
    * @param {object}                 context          Cucumber World object
    */
   afterScenario: async function (world, result) {
-    if (!result.passed || result.passed) {
-      const date = new Date();
-      const timestamp = date.toISOString().replace(/[^0-9]/g, "");
+    const date = new Date();
+    const timestamp = date.toISOString().replace(/[^0-9]/g, "");
 
-      try {
-        const fs = await import("fs");
-        const path = await import("path");
-        const screenshotDir = "./screenshots";
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const screenshotDir = "./screenshots";
 
-        if (!fs.existsSync(screenshotDir)) {
-          fs.mkdirSync(screenshotDir);
-        }
-
-        const filepath = path.join(
-          screenshotDir,
-          `scenario-failure-${world.pickle.name.replace(
-            /[^a-zA-Z0-9]/g,
-            "_"
-          )}-${timestamp}.png`
-        );
-
-        await browser.saveScreenshot(filepath);
-      } catch (err) {
-        console.error("Failed to capture screenshot:", err);
+      if (!fs.existsSync(screenshotDir)) {
+        fs.mkdirSync(screenshotDir);
       }
+
+      const status = result.passed ? "pass" : "failure";
+      const filepath = path.join(
+        screenshotDir,
+        `scenario-${status}-${world.pickle.name.replace(
+          /[^a-zA-Z0-9]/g,
+          "_"
+        )}-${timestamp}.png`
+      );
+
+      await browser.saveScreenshot(filepath);
+
+      const sentryService = container.resolve(SentryService);
+      // If scenario failed, send to Sentry
+      if (!result.passed && result.error) {
+        try {
+          const errorToSend =
+            typeof result.error === "string"
+              ? result.error
+              : (result.error as unknown) instanceof Error
+              ? result.error
+              : new Error(JSON.stringify(result.error));
+
+          await sentryService.captureTestError(errorToSend, {
+            scenarioName: world.pickle.name,
+            browserLogs: await browser.getLogs("browser"),
+          });
+        } catch (err) {
+          console.error("Failed to send error to Sentry:", err);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to capture screenshot:", err);
     }
 
     await browser.pause(10000);
@@ -444,7 +471,7 @@ export const config: Options.Testrunner = {
 
       // Generate Allure report
       childProcess.exec(
-        "allure generate reports/allure-results --clean -o reports/allure-report",
+        "allure generate test-reports/allure-results --clean -o test-reports/allure-report",
         (error: Error | null) => {
           if (error) {
             console.error("Failed to generate Test report:", error);

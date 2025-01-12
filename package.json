@@ -6,9 +6,10 @@
   "scripts": {
     "tests:android": "PLATFORM=android wdio run ./config/wdio.android.conf.ts --suite sequential",
     "tests:ios": "PLATFORM=ios wdio run ./config/wdio.ios.conf.ts --suite sequential",
-    "report": "npx allure-commandline generate reports/allure-results --clean -o reports/allure-report && npx allure-commandline open reports/allure-report",
+    "report": "npx allure-commandline generate test-reports/allure-results --clean -o test-reports/allure-report && npx allure-commandline open test-reports/allure-report",
     "android:tests:report": "npm run tests:android && npm run report",
-    "ios:tests:report": "npm run tests:ios && npm run report"
+    "ios:tests:report": "npm run tests:ios && npm run report",
+    "android:tests:browserstack": "PLATFORM=android wdio run ./config/wdio.browser.stack.conf.ts --suite sequential"
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,9 @@
     "wdio-wait-for": "^3.0.11"
   },
   "dependencies": {
+    "@sentry/integrations": "^7.114.0",
+    "@sentry/node": "^8.48.0",
+    "@sentry/profiling-node": "^8.48.0",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "reflect-metadata": "^0.2.2",

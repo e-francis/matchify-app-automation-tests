@@ -1,8 +1,13 @@
 import { selectors } from "../../config/environment.ts";
-import { autoInjectable } from "tsyringe";
+import { injectable } from "tsyringe";
 
-@autoInjectable()
+@injectable()
 export default class LaunchApp {
+  constructor() {
+    console.log("Current PLATFORM:", process.env.PLATFORM);
+    console.log("Selected selectors:", this.selectors);
+  }
+
   private readonly selectors = selectors;
 
   private readonly elements = {
@@ -29,9 +34,11 @@ export default class LaunchApp {
 
       await expect(this.elements.welcomeText()).toHaveText("Matchify");
 
+      await browser.pause(5000);
+
       await this.elements.loginButton().waitForDisplayed({
         timeout: 30000,
-        timeoutMsg: "Create account button not displayed after 30s",
+        timeoutMsg: "Login button not displayed after 30s",
       });
       await this.elements.loginButton().click();
       await expect(this.elements.loginText()).toHaveText("Login");

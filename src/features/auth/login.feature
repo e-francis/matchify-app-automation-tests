@@ -19,7 +19,7 @@ Feature: Login Test Suite
     Then the user should be logged in
 
   @login @negative
-  Scenario: User account should be locked after 3 login attempt trails
+  Scenario: User account should be locked after 3 login attempt trials
     Given on app launch: Login SCN004
     And enters invalid credentials for three times in a row
     Then the user account should be locked
