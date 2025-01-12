@@ -1,0 +1,68 @@
+{
+  "welcomeScreenSelectors": {
+    "loginButton": "~Login Button",
+    "welcomeText": "android=new UiSelector().resourceId(\"com.matchify:id/tvMatchify\")"
+  },
+
+  "commonSelectors": {
+    "message": "~Message",
+    "actionButton": "~Action Button",
+    "title": "~Title",
+    "createAccountButton": "~Create new account",
+    "emailInputField": "android=new UiSelector().resourceId(\"com.matchify:id/etEmail\")",
+    "passcodeInputField": "android=new UiSelector().resourceId(\"com.matchify:id/etPasscode\")",
+    "okayButton": "android=new UiSelector().resourceId(\"android:id/button1\")"
+  },
+
+  "onboardingSelectors": {
+    "firstNameInputField": "android=new UiSelector().resourceId(\"com.matchify:id/etFirstName\")",
+    "lastNameInputField": "android=new UiSelector().resourceId(\"com.matchify:id/etLastName\")",
+    "genderDropDownMenuBox": "android=new UiSelector().resourceId(\"com.matchify:id/spinnerGender\")",
+    "datePicker": "android= UiSelector().resourceId(\"com.matchify:id/etDateOfBirth\")",
+    "backButton": "~Back Button",
+    "locationDropDownMenuBox": "android=new UiSelector().resourceId(\"com.matchify:id/spinnerLocation\")",
+    "uploadPhotoButton": "~Upload profile picture",
+    "confrimPasscodeInputField": "android=new UiSelector().resourceId(\"com.matchify:id/etConfirmPasscode\")",
+    "createAccounText": "android=new UiSelector().text(\"Create Your Account\")"
+  },
+
+  "loginSelectors": {
+    "loginButton": "~Login Button",
+    "loginText": "~Login"
+  },
+
+  "genderSelectors": {
+    "male": "android=new UiSelector().text(\"Male\")",
+    "female": "android=new UiSelector().text(\"Female\")",
+    "other": "android=new UiSelector().text(\"Other\")"
+  },
+
+  "locationsSelectors": {
+    "newYork": "android=new UiSelector().text(\"New York, USA\")",
+    "london": "android=new UiSelector().text(\"London, UK\")",
+    "paris": "android=new UiSelector().text(\"Paris, France\")",
+    "tokyo": "android=new UiSelector().text(\"Tokyo, Japan\")",
+    "sydney": "android=new UiSelector().text(\"Sydney, Australia\")"
+  },
+
+  "interestSelectors": {
+    "music": "android=new UiSelector().text(\"Music\")",
+    "sports": "android=new UiSelector().text(\"Sports\")",
+    "travel": "android=new UiSelector().text(\"Travel\")",
+    "reading": "android=new UiSelector().text(\"Reading\")",
+    "movies": "android=new UiSelector().text(\"Movies\")",
+    "food": "android=new UiSelector().text(\"Food\")",
+    "art": "android=new UiSelector().text(\"Art\")",
+    "photography": "android=new UiSelector().text(\"Photography\")",
+    "gaming": "android=new UiSelector().text(\"Gaming\")",
+    "fashion": "android=new UiSelector().text(\"Fashion\")",
+    "technology": "android=new UiSelector().text(\"Technology\")",
+    "fitness": "android=new UiSelector().text(\"Fitness\")"
+  },
+
+  "datePicker": {
+    "year": "android=new UiSelector().resourceId(\"android:id/date_picker_header_year\")",
+    "selectYear": "android=new UiSelector().text(\"2022\").instance(1)",
+    "underAgeErrorNotifier": "android=new UiSelector().text(\"You must be 18 years or older to create an account\")"
+  }
+}
