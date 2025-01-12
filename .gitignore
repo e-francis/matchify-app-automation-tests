@@ -1,2 +1,18 @@
-node_modules
+# Node artifact files
+node_modules/
+dist/
+
+# VSCode
 .history
+User
+# Local test reports
+reports/
+allure-report/
+screenshots/
+test-reports
+
+
+# Log files
+*.log
+logs/
+.tmp/
