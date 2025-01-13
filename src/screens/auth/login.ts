@@ -1,14 +1,16 @@
 import { injectable } from "tsyringe";
-import { selectors } from "../../../config/environment";
-import EnterPasscode from "../../utils/helpers/enter.passcode";
-
+import { selectors } from "../../../config/environment.ts";
+import EnterPasscode from "../../utils/helpers/enter.passcode.ts";
+import HandleNetworkError from "../../utils/helpers/handle.network.error.ts";
 @injectable()
 export default class Login {
   private readonly selectors = selectors;
   private readonly enterPasscode: EnterPasscode;
+  private readonly handleNetworkError: HandleNetworkError;
 
   constructor() {
     this.enterPasscode = new EnterPasscode();
+    this.handleNetworkError = new HandleNetworkError();
   }
 
   private readonly elements = {
@@ -21,42 +23,6 @@ export default class Login {
     loginButton: () => $(this.selectors.loginSelectors.loginButton),
     greeting: () => $(this.selectors.loginSelectors.greeting),
   };
-
-  private async handleNetworkError(maxRetries: number = 2) {
-    let retryCount = 0;
-
-    while (retryCount < maxRetries) {
-      try {
-        const messageText = await this.elements.message().getText();
-        const titleText = await this.elements.title().getText();
-
-        if (
-          messageText === "Network Error: Check your connection" &&
-          titleText === "Login Failed"
-        ) {
-          retryCount++;
-          console.log(
-            `Network error detected. Attempt ${retryCount} of ${maxRetries}`
-          );
-
-          await browser.pause(5000);
-          await this.elements.actionButton().click();
-          await browser.pause(5000);
-          await this.elements.loginButton().click();
-          continue;
-        }
-
-        return false;
-      } catch (error) {
-        console.log(`Error during login (attempt ${retryCount + 1}):`, error);
-        retryCount++;
-        if (retryCount === maxRetries) {
-          return false;
-        }
-        await browser.pause(2000);
-      }
-    }
-  }
 
   async loginWithValidCredentials(email: string, passcode: number) {
     try {
@@ -75,7 +41,7 @@ export default class Login {
         timeoutMsg: "No success message was displayed",
       });
 
-      const isNetworkError = await this.handleNetworkError();
+      const isNetworkError = await this.handleNetworkError.handleNetworkError();
       if (isNetworkError) {
         throw new Error("Network connectivity issue detected");
       }
@@ -113,7 +79,7 @@ export default class Login {
         timeoutMsg: "No error message was displayed",
       });
 
-      const isNetworkError = await this.handleNetworkError();
+      const isNetworkError = await this.handleNetworkError.handleNetworkError();
       if (isNetworkError) {
         throw new Error("Network connectivity issue detected");
       }
@@ -139,7 +105,7 @@ export default class Login {
         "Account locked due to too many failed attempts"
       );
 
-      const isNetworkError = await this.handleNetworkError();
+      const isNetworkError = await this.handleNetworkError.handleNetworkError();
       if (isNetworkError) {
         throw new Error("Network connectivity issue detected");
       }
@@ -202,7 +168,7 @@ export default class Login {
         timeoutMsg: "No error message was displayed",
       });
 
-      const isNetworkError = await this.handleNetworkError();
+      const isNetworkError = await this.handleNetworkError.handleNetworkError();
       if (isNetworkError) {
         throw new Error("Network connectivity issue detected");
       }
