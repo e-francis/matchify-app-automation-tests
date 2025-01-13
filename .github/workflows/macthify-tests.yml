@@ -38,7 +38,7 @@ jobs:
 
       - name: Generate and upload Allure reports
         run: |
-          npm run report
+          npm run report:ci
         if: always()
 
       - name: Upload Allure Report

@@ -9,7 +9,8 @@
     "report": "npx allure-commandline generate test-reports/allure-results --clean -o test-reports/allure-report && npx allure-commandline open test-reports/allure-report",
     "android:tests:report": "npm run tests:android && npm run report",
     "ios:tests:report": "npm run tests:ios && npm run report",
-    "android:tests:browserstack": "PLATFORM=android wdio run ./config/wdio.browser.stack.conf.ts --suite sequential"
+    "android:tests:browserstack": "PLATFORM=android wdio run ./config/wdio.browser.stack.conf.ts --suite sequential",
+    "report:ci": "npx allure-commandline generate test-reports/allure-results --clean -o test-reports/allure-report"
   },
   "repository": {
     "type": "git",
