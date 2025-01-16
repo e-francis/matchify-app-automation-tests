@@ -170,7 +170,7 @@ export const config: WebdriverIO.Config = {
             scenarioName: scenario.name,
             stepText: step.text,
             screenshotPath: filepath,
-            browserLogs: await browser.getLogs("browser"),
+            browserLogs: await browser.getLogs("logact"),
           });
         }
       } catch (err) {
@@ -243,7 +243,7 @@ export const config: WebdriverIO.Config = {
   afterTest: async function (test, { passed, error }) {
     if (!passed) {
       const sentryService = container.resolve(SentryService);
-      const browserLogs = await browser.getLogs("browser");
+      const browserLogs = await browser.getLogs("logact");
       const deviceInfo = await browser.capabilities;
 
       await sentryService.captureTestError(error || "Test failed", {

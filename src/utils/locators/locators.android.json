@@ -8,7 +8,7 @@
     "message": "android=new UiSelector().resourceId(\"com.matchify:id/tvMessage\")",
     "actionButton": "android=new UiSelector().resourceId(\"com.matchify:id/btnAction\")",
     "title": "android=new UiSelector().resourceId(\"com.matchify:id/tvTitle\")",
-    "createAccountButton": "android=new UiSelector().resourceId(\"com.matchify:id/btnLogin\")",
+    "createAccountButton": "android=new UiSelector().resourceId(\"com.matchify:id/btnCreateAccount\")",
     "emailInputField": "android=new UiSelector().resourceId(\"com.matchify:id/etEmail\")",
     "passcodeInputField": "android=new UiSelector().resourceId(\"com.matchify:id/etPasscode\")",
     "okayButton": "android=new UiSelector().resourceId(\"android:id/button1\")"
@@ -23,7 +23,11 @@
     "locationDropDownMenuBox": "android=new UiSelector().resourceId(\"com.matchify:id/spinnerLocation\")",
     "uploadPhotoButton": "android=new UiSelector().resourceId(\"com.matchify:id/btnUploadPhoto\")",
     "confrimPasscodeInputField": "android=new UiSelector().resourceId(\"com.matchify:id/etConfirmPasscode\")",
-    "createAccounText": "android=new UiSelector().text(\"Create Your Account\")"
+    "createAccounText": "android=new UiSelector().text(\"Create Your Account\")",
+    "nextButton": "android=new UiSelector().resourceId(\"com.matchify:id/btnNext\")",
+    "completeAccountSetUpText": "android=new UiSelector().text(\"Complete Your Account Setup\")",
+    "profilePicturePlaceHolder": "android=new UiSelector().resourceId(\"com.matchify:id/ivProfilePicture\")",
+    "selectFirstPicture": "android=new UiSelector().resourceId(\"com.google.android.providers.media.module:id/icon_thumbnail\").instance(0)"
   },
 
   "loginSelectors": {
@@ -63,7 +67,7 @@
 
   "datePicker": {
     "year": "android=new UiSelector().resourceId(\"android:id/date_picker_header_year\")",
-    "selectYear": "android=new UiSelector().text(\"2022\").instance(1)",
-    "underAgeErrorNotifier": "android=new UiSelector().text(\"You must be 18 years or older to create an account\")"
+    "selectYear": "android=new UiSelector().text(\"2010\")",
+    "underAgeErrorNotifier": "android=new UiSelector().resourceId(\"com.matchify:id/textinput_error\")"
   }
 }

@@ -19,11 +19,13 @@ export const config: WebdriverIO.Config = {
   // The path of the spec files will be resolved relative from the directory of
   // of the config file unless it's absolute.
 
-
   specs: ["../src/features/**/*.feature"],
 
   suites: {
-    sequential: ["../src/features/**/login.feature"],
+    sequential: [
+      "../src/features/**/profile.creation.feature",
+      "../src/features/**/login.feature",
+    ],
   },
 
   // Framework you want to run your specs with.

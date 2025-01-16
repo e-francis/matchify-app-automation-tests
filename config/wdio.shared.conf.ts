@@ -128,6 +128,7 @@ export const config: Options.Testrunner = {
           relaxedSecurity: true,
           log: "./logs/appium.log",
           port: 4723,
+          allowInsecure: "adb_shell,adb_exec",
         },
       },
     ],
@@ -348,7 +349,7 @@ export const config: Options.Testrunner = {
             scenarioName: scenario.name,
             stepText: step.text,
             screenshotPath: filepath,
-            browserLogs: await browser.getLogs("browser"),
+            browserLogs: await browser.getLogs("logcat"),
           });
         }
       } catch (err) {
@@ -409,7 +410,7 @@ export const config: Options.Testrunner = {
 
           await sentryService.captureTestError(errorToSend, {
             scenarioName: world.pickle.name,
-            browserLogs: await browser.getLogs("browser"),
+            browserLogs: await browser.getLogs("logcat"),
           });
         } catch (err) {
           console.error("Failed to send error to Sentry:", err);
